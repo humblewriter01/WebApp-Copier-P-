@@ -1,0 +1,68 @@
+{
+  "name": "telegram-trading-copier",
+  "version": "1.0.0",
+  "description": "Advanced Telegram Trading Signal Copier Bot with MetaAPI Integration",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "setup": "echo 'Please configure your .env file with required credentials'",
+    "deploy": "git push heroku main"
+  },
+  "keywords": [
+    "telegram",
+    "trading",
+    "bot",
+    "copier",
+    "metatrader",
+    "mt4",
+    "mt5",
+    "signals",
+    "forex",
+    "crypto"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "node-telegram-bot-api": "^0.64.0",
+    "axios": "^1.6.0",
+    "express": "^4.18.2",
+    "crypto": "^1.0.1",
+    "telegram": "^2.23.0",
+    "telegram-mtproto": "^3.0.12",
+    "dotenv": "^16.3.1",
+    "helmet": "^7.0.0",
+    "cors": "^2.8.5",
+    "winston": "^3.11.0",
+    "rate-limiter-flexible": "^3.0.5",
+    "body-parser": "^1.20.2",
+    "compression": "^1.7.4",
+    "express-rate-limit": "^7.1.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "eslint": "^8.55.0",
+    "prettier": "^3.1.0"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/telegram-trading-copier.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/telegram-trading-copier/issues"
+  },
+  "homepage": "https://github.com/yourusername/telegram-trading-copier#readme",
+  "private": true,
+  "prettier": {
+    "semi": true,
+    "trailingComma": "es5",
+    "singleQuote": true,
+    "printWidth": 100,
+    "tabWidth": 2
+  }
+}

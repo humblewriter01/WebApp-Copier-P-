@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Trading Copier</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+      background: var(--tg-theme-bg-color, #ffffff);
+      color: var(--tg-theme-text-color, #000000);
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 100%;
+      padding: 16px;
+    }
+
+    .header {
+      text-align: center;
+      padding: 24px 16px;
+      background: linear-gradient(135deg, var(--tg-theme-button-color, #3390ec) 0%, var(--tg-theme-secondary-bg-color, #6ab7ff) 100%);
+      color: white;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 24px;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .status-cards {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .status-card {
+      background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+      padding: 16px;
+      border-radius: 16px;
+      text-align: center;
+    }
+
+    .status-card .icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    .status-card .value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--tg-theme-button-color, #3390ec);
+      margin-bottom: 4px;
+    }
+
+    .status-card .label {
+      font-size: 12px;
+      color: var(--tg-theme-hint-color, #999999);
+    }
+
+    .section {
+      background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge {
+      background: var(--tg-theme-button-color, #3390ec);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge.success {
+      background: #4CAF50;
+    }
+
+    .badge.warning {
+      background: #FF9800;
+    }
+
+    .badge.error {
+      background: #F44336;
+    }
+
+    .channel-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .channel-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--tg-theme-bg-color, #ffffff);
+      padding: 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .channel-item:active {
+      transform: scale(0.98);
+    }
+
+    .channel-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+    }
+
+    .channel-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    .channel-details {
+      flex: 1;
+    }
+
+    .channel-name {
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .channel-username {
+      font-size: 12px;
+      color: var(--tg-theme-hint-color, #999999);
+    }
+
+    .toggle-switch {
+      width: 48px;
+      height: 28px;
+      background: #ccc;
+      border-radius: 14px;
+      position: relative;
+      transition: background 0.3s;
+    }
+
+    .toggle-switch.active {
+      background: var(--tg-theme-button-color, #3390ec);
+    }
+
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      background: white;
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+      transition: left 0.3s;
+    }
+
+    .toggle-switch.active::after {
+      left: 22px;
+    }
+
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .setting-item {
+      background: var(--tg-theme-bg-color, #ffffff);
+      padding: 12px;
+      border-radius: 12px;
+    }
+
+    .setting-label {
+      font-size: 12px;
+      color: var(--tg-theme-hint-color, #999999);
+      margin-bottom: 8px;
+    }
+
+    .setting-value {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .setting-value input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--tg-theme-text-color, #000000);
+      outline: none;
+    }
+
+    .setting-unit {
+      font-size: 14px;
+      color: var(--tg-theme-hint-color, #999999);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 32px 16px;
+      color: var(--tg-theme-hint-color, #999999);
+    }
+
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+      opacity: 0.5;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s;
+      margin-top: 8px;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-primary {
+      background: var(--tg-theme-button-color, #3390ec);
+      color: var(--tg-theme-button-text-color, #ffffff);
+    }
+
+    .btn-success {
+      background: #4CAF50;
+      color: white;
+    }
+
+    .btn-danger {
+      background: #F44336;
+      color: white;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 48px;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--tg-theme-secondary-bg-color, #f0f0f0);
+      border-top-color: var(--tg-theme-button-color, #3390ec);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--tg-theme-secondary-bg-color, #333333);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 24px;
+      font-size: 14px;
+      z-index: 1000;
+      animation: slideUp 0.3s;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Loading...</p>
+  </div>
+
+  <div id="app" class="hidden">
+    <div class="header">
+      <h1>🤖 Trading Copier</h1>
+      <p>Automated Signal Copying</p>
+    </div>
+
+    <div class="container">
+      <!-- Status Cards -->
+      <div class="status-cards">
+        <div class="status-card">
+          <div class="icon">📢</div>
+          <div class="value" id="channelCount">0</div>
+          <div class="label">Active Channels</div>
+        </div>
+        <div class="status-card">
+          <div class="icon">📊</div>
+          <div class="value" id="accountCount">0</div>
+          <div class="label">Trading Accounts</div>
+        </div>
+      </div>
+
+      <!-- Status Badge -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">
+            <span>⚡</span>
+            <span>Status</span>
+          </div>
+          <span class="badge" id="statusBadge">Inactive</span>
+        </div>
+      </div>
+
+      <!-- Channels Section -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">
+            <span>📢</span>
+            <span>Signal Channels</span>
+          </div>
+        </div>
+        <div id="channelList" class="channel-list">
+          <div class="empty-state">
+            <div class="empty-state-icon">📭</div>
+            <p>No channels added yet</p>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="addChannel()">+ Add Channel</button>
+      </div>
+
+      <!-- Settings Section -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">
+            <span>⚙️</span>
+            <span>Trading Settings</span>
+          </div>
+        </div>
+        <div class="settings-grid">
+          <div class="setting-item">
+            <div class="setting-label">Lot Size</div>
+            <div class="setting-value">
+              <input type="number" id="lotSize" value="0.01" step="0.01" min="0.01" onchange="updateSettings()">
+              <span class="setting-unit">lots</span>
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-label">Orders</div>
+            <div class="setting-value">
+              <input type="number" id="numOrders" value="1" min="1" max="10" onchange="updateSettings()">
+              <span class="setting-unit">per signal</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <button class="btn btn-success" id="startBtn" onclick="toggleCopying()">▶️ Start Copying</button>
+    </div>
+  </div>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    let userData = null;
+    let selectedChannels = [];
+
+    // Initialize app
+    tg.ready();
+    tg.expand();
+
+    // Set theme
+    document.body.style.setProperty('--tg-theme-bg-color', tg.themeParams.bg_color || '#ffffff');
+    document.body.style.setProperty('--tg-theme-text-color', tg.themeParams.text_color || '#000000');
+    document.body.style.setProperty('--tg-theme-button-color', tg.themeParams.button_color || '#3390ec');
+
+    // Load user data
+    async function loadUserData() {
+      try {
+        const initData = tg.initData;
+        const response = await fetch('/api/webapp/user-data', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ initData })
+        });
+
+        userData = await response.json();
+        renderApp();
+      } catch (error) {
+        showToast('Error loading data');
+        console.error(error);
+      }
+    }
+
+    // Render app
+    function renderApp() {
+      document.getElementById('loading').classList.add('hidden');
+      document.getElementById('app').classList.remove('hidden');
+
+      // Update counts
+      document.getElementById('channelCount').textContent = userData.channels?.length || 0;
+      document.getElementById('accountCount').textContent = (userData.mt4Accounts?.length || 0) + (userData.mt5Accounts?.length || 0);
+
+      // Update status
+      const statusBadge = document.getElementById('statusBadge');
+      if (userData.isActive) {
+        statusBadge.textContent = 'Active';
+        statusBadge.className = 'badge success';
+        document.getElementById('startBtn').innerHTML = '⏸️ Stop Copying';
+        document.getElementById('startBtn').className = 'btn btn-danger';
+      } else {
+        statusBadge.textContent = 'Inactive';
+        statusBadge.className = 'badge error';
+        document.getElementById('startBtn').innerHTML = '▶️ Start Copying';
+        document.getElementById('startBtn').className = 'btn btn-success';
+      }
+
+      // Render channels
+      renderChannels();
+
+      // Load settings
+      document.getElementById('lotSize').value = userData.settings?.baseLotSize || 0.01;
+      document.getElementById('numOrders').value = userData.settings?.numberOfOrders || 1;
+    }
+
+    // Render channels
+    function renderChannels() {
+      const channelList = document.getElementById('channelList');
+      
+      if (!userData.channels || userData.channels.length === 0) {
+        channelList.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">📭</div>
+            <p>No channels added yet</p>
+          </div>
+        `;
+        return;
+      }
+
+      channelList.innerHTML = userData.channels.map(channel => `
+        <div class="channel-item" onclick="toggleChannel('${channel.id}')">
+          <div class="channel-info">
+            <div class="channel-icon">${channel.title.charAt(0).toUpperCase()}</div>
+            <div class="channel-details">
+              <div class="channel-name">${channel.title}</div>
+              <div class="channel-username">${channel.username ? '@' + channel.username : channel.id}</div>
+            </div>
+          </div>
+          <div class="toggle-switch ${channel.enabled ? 'active' : ''}" id="toggle-${channel.id}"></div>
+        </div>
+      `).join('');
+    }
+
+    // Toggle channel
+    function toggleChannel(channelId) {
+      const channel = userData.channels.find(c => c.id === channelId);
+      if (channel) {
+        channel.enabled = !channel.enabled;
+        renderChannels();
+        updateSettings();
+      }
+    }
+
+    // Add channel
+    function addChannel() {
+      tg.showPopup({
+        title: 'Add Channel',
+        message: 'Go back to the bot and use /add_channel command to add a new signal channel.',
+        buttons: [{ type: 'ok' }]
+      });
+    }
+
+    // Update settings
+    async function updateSettings() {
+      const settings = {
+        baseLotSize: parseFloat(document.getElementById('lotSize').value),
+        numberOfOrders: parseInt(document.getElementById('numOrders').value),
+        channels: userData.channels
+      };
+
+      try {
+        await fetch('/api/webapp/update-settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            initData: tg.initData,
+            settings
+          })
+        });
+        showToast('Settings updated');
+      } catch (error) {
+        showToast('Error updating settings');
+      }
+    }
+
+    // Toggle copying
+    async function toggleCopying() {
+      const newStatus = !userData.isActive;
+      
+      try {
+        const response = await fetch('/api/webapp/toggle-copying', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            initData: tg.initData,
+            isActive: newStatus
+          })
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+          userData.isActive = newStatus;
+          renderApp();
+          showToast(newStatus ? 'Copying started' : 'Copying stopped');
+          
+          tg.HapticFeedback.notificationOccurred('success');
+        } else {
+          showToast(result.message || 'Error');
+        }
+      } catch (error) {
+        showToast('Error toggling copying');
+      }
+    }
+
+    // Show toast
+    function showToast(message) {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.remove();
+      }, 3000);
+    }
+
+    // Initialize
+    loadUserData();
+  </script>
+</body>
+</html>

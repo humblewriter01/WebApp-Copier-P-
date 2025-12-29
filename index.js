@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
 const express = require('express');
@@ -9,6 +11,18 @@ const META_API_KEY = process.env.META_API_KEY || 'eyJhbGciOiJSUzUxMiIsInR5cCI6Ik
 const META_API_URL = 'https://mt-client-api-v1.london.agiliumtrade.ai';
 const PORT = process.env.PORT || 3000;
 const WEBHOOK_URL = process.env.WEBHOOK_URL;
+
+// Validate required environment variables
+if (!META_API_KEY) {
+  console.error('❌ ERROR: META_API_KEY is not set!');
+  console.error('📝 Please create a .env file with your MetaAPI token');
+  console.error('💡 Example: META_API_KEY=your_token_here');
+  process.exit(1);
+}
+
+console.log('✅ Environment variables loaded');
+console.log(`📝 META_API_KEY: ${META_API_KEY.substring(0, 20)}...`);
+console.log(`🤖 TELEGRAM_TOKEN: ${TELEGRAM_TOKEN.substring(0, 20)}...`);
 
 // Telegram API credentials for OAuth
 const TELEGRAM_API_ID = 39710929;
